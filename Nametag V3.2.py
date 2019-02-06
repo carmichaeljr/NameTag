@@ -1,7 +1,6 @@
 #Made by student Jack Carmichael
-#9/22/16
 #All rights reserved ;D
-"""=================================================================================================================
+"""===============================================================================================================
 Object--------------------Parameters--------------Inheritance
 Tkinter Wrapper
     -Window()             -name                   -object
@@ -113,6 +112,9 @@ class WindowFrame(GroupWidgetActions):
     def pack_frame(self, position, pad_x, pad_y):
         super(WindowFrame, self).pack_widget(self.frame, position, pad_x, pad_y)
 
+    def set_frame_fill(self, new_fill):
+        self.frame.configure(fill=new_fill)
+
     def resize_frame(self, x, y):
         self.frame.configure(width=x)
         self.frame.configure(height=y)
@@ -129,6 +131,9 @@ class WindowButton(GroupWidgetActions):
         self.button_text=StringVar()
         self.button_text.set(name)
         self.button=Button(window,text=name,command=action,font='times 10',cursor='hand2',bd=2, textvariable=self.button_text)
+
+    def get_button(self):
+            return self.button
 
     def set_position(self,row,column,pad_x,pad_y):
         self.button.grid(row=row,column=column, padx=pad_x, pady=pad_y)
@@ -293,16 +298,14 @@ class ConfigureWindow(Window):
 class NameTag(Window):
     def __init__(self, window_name, name, config_link):
         super(NameTag, self).__init__(window_name)
+        self.help_status="grey50"
         self.user_name=name
         self.config_link=config_link
         self.__setup_menu()
         self.__add_frames()
         self.__add_name()
-        self.__add_edmodo_link()
-        self.__add_recordXP_link()
-        self.__add_server_link()
-        self.__add_bathroom()
-        self.__add_configure_link()
+        self.__add_buttons()
+        self.__add_help_area()
         self.bind_action("<Escape>",exit)
         self.window.resizable(width=FALSE, height=FALSE)  #makes it so you cant resize it
         self.window.call('wm', 'attributes', '.', '-topmost', '1')  #Makes it always the top window
@@ -317,38 +320,42 @@ class NameTag(Window):
         file_cascade.add_item_to_cascade("Change Name", self.change_and_update_name)
         file_cascade.add_separator()
         file_cascade.add_item_to_cascade("Quit", self.window.destroy)
-        download_cascade=WindowMenuCascade(self.window)
-        download_cascade.add_tearoff(False)
-        download_cascade.add_item_to_cascade("Atari", partial(self.download_emulator, download_emulators.atari))
-        download_cascade.add_item_to_cascade("Nintendo",partial(self.download_emulator, download_emulators.nintendo))
-        download_cascade.add_item_to_cascade("Sega",partial(self.download_emulator, download_emulators.sega))
         menu=WindowMenu(self.window)
         menu.add_cascade_to_menu("File", file_cascade)
-        menu.add_cascade_to_menu("Download",download_cascade)
 
     def __add_frames(self):
         self.name_frame=WindowFrame(self.window)
         self.top_frame=WindowFrame(self.window)
         self.error_frame=WindowFrame(self.window)
+        self.help_frame=WindowFrame(self.window)
         self.name_frame.pack_frame("TOP",0,0)
         self.top_frame.pack_frame("TOP",0,0)
         self.error_frame.pack_frame("TOP",0,0)
+        self.help_frame.pack_frame("TOP",0,0)
         
     def __add_name(self):
         self.name_label=WindowLabel(self.name_frame.get_frame(), self.user_name)
         self.name_label.set_colors(user_info.get_foreground_color(),user_info.get_background_color(),'times 72 bold')
         self.name_label.pack_label("TOP",5,5)
 
+    def __add_buttons(self):
+        self.__add_edmodo_link()
+        self.__add_infinite_campus_link()
+        self.__add_google_drive_link()
+        self.__add_bathroom()
+        self.__add_help_button()
+        self.__add_configure_link()
+
     def __add_edmodo_link(self):
         edmodo_link=WindowButton(self.top_frame.get_frame(), "Edmodo", self.open_edmodo)
         edmodo_link.pack_button("LEFT",2,2)
 
-    def __add_recordXP_link(self):
-        recordXP_link=WindowButton(self.top_frame.get_frame(), "Record XP", self.open_XP)
+    def __add_infinite_campus_link(self):
+        recordXP_link=WindowButton(self.top_frame.get_frame(), "Infinite Campus", self.open_infinite_campus)
         recordXP_link.pack_button("LEFT",0,2)
 
-    def __add_server_link(self):
-        server_link=WindowButton(self.top_frame.get_frame(), "Server", self.open_server)
+    def __add_google_drive_link(self):
+        server_link=WindowButton(self.top_frame.get_frame(), "GDrive", self.open_google_drive)
         server_link.pack_button("LEFT",2,2)
 
     def __add_bathroom(self):
@@ -363,6 +370,15 @@ class NameTag(Window):
         else:
             self.config_link_button=WindowButton(self.top_frame.get_frame(), "Config. Link", self.configure_and_update_link)
             self.config_link_button.pack_button("LEFT",5,5)
+
+    def __add_help_button(self):
+        self.help_toggle=WindowButton(self.top_frame.get_frame(),"Help Me!",self.toggle_help_display)
+        self.help_toggle.pack_button("LEFT",0,2)
+
+    def __add_help_area(self):
+        self.help_canvas=Canvas(self.help_frame.get_frame(), width=500,height=50)
+        self.help_canvas.config(bg=self.help_status)
+        self.help_canvas.pack(padx=0, pady=0,side=LEFT)
 
     def config_button_name(self):
         if len(self.config_link)>=10:
@@ -385,20 +401,20 @@ class NameTag(Window):
 
     def open_edmodo(self):
         webbrowser.open("www.edmodo.com",new=0,autoraise=True)
-    def open_XP(self):
-        webbrowser.open("http://debolevelup.site11.com/login.php",new=0,autoraise=True)
+    def open_infinite_campus(self):
+        webbrowser.open("https://campus.dcsdk12.org/icprod/portal/icprod.jsp",new=0,autoraise=True)
     def open_config_link(self):
         webbrowser.open("{0}".format(user_info.config_link),new=0, autoraise=True)
-    def open_server(self):
-        try:
-            os.startfile(r"\\hrhs-files\HRHS\department\mr. debolt")
-        except:
-            no_server=UserErrorMessage(self.error_frame.get_frame(), "Can't locate server!")
-    def download_emulator(self, action):
-        try:
-            action()
-        except:
-            no_server=UserErrorMessage(self.error_frame.get_frame(), "Can't locate server!")
+    def open_google_drive(self):
+        webbrowser.open("https://drive.google.com/drive/my-drive",new=0,autoraise=True)
+    def toggle_help_display(self):
+        colors=["grey50","red","green"]
+        names=["Help Me!","Can Help!","Learning!"]
+        index=colors.index(self.help_status)
+        index=(index+1)%len(colors)
+        self.help_status=colors[index]
+        self.help_canvas.config(bg=self.help_status)
+        self.help_toggle.change_text(names[index])
 
 
 class ColorWindow(Window):
